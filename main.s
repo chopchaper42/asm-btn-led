@@ -22,8 +22,14 @@ loop:
     ldr r0, =GPIOA_IDR  @ Read input of port A
     ldr r1, [r0]       @ load the value stored on address from r0 to r1. r1 = 0x40010808
     tst r1, #0x1        @ Test if 1st pin is HIGH
-    bne turn_led_off
-    beq turn_led_on
+    beq loop1
+    bl turn_led_on
+    mov r0, #1         @ put 1 to R0 to use in delay
+    bl delay           @ delay to avoid switch bouncing
+    b loop
+
+loop1:
+    bl turn_led_off
     mov r0, #1         @ put 1 to R0 to use in delay
     bl delay           @ delay to avoid switch bouncing
 b loop
@@ -61,12 +67,8 @@ setup_gpio:
 
     ldr r0, =GPIOA_CRL   @ load GPIOA_CRL to R0
     ldr r1, [r0]
+    bic r1, #0xFF
     orr r1, #0x8         @ set PA0 to INPUT pull down
-    str r1, [r0]
-
-    @ set 0 on PA0 output to set the pin to pull down
-    ldr r0, =GPIOA_ODR
-    ldr r1, =0x0
     str r1, [r0]
 
 bx lr
